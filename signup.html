@@ -1,0 +1,143 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mobile App Signup</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+  <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
+    <h2 class="text-2xl font-bold text-center text-gray-800 mb-6">Welcome to Our App!</h2>
+    <p id="personalized-message" class="text-center text-gray-600 mb-4">Let's get you started.</p>
+    <div id="error-message" class="hidden text-red-500 text-sm mb-4 text-center"></div>
+    <form id="signup-form" class="space-y-4">
+      <div>
+        <label for="name" class="block text-sm font-medium text-gray-700">Your Name</label>
+        <input
+          type="text"
+          id="name"
+          name="name"
+          class="mt-1 w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          placeholder="Enter your name"
+          required
+        />
+      </div>
+      <div>
+        <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
+        <input
+          type="email"
+          id="email"
+          name="email"
+          class="mt-1 w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          placeholder="Enter your email"
+          required
+        />
+      </div>
+      <div>
+        <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
+        <input
+          type="password"
+          id="password"
+          name="password"
+          class="mt-1 w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          placeholder="Create a password"
+          required
+        />
+      </div>
+      <button
+        type="submit"
+        class="w-full bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700 transition duration-200"
+      >
+        Sign Up
+      </button>
+    </form>
+    <p class="text-center text-sm text-gray-600 mt-4">
+      Your data is secure with us. We use encryption to protect your information.
+    </p>
+  </div>
+
+  <script>
+    const form = document.getElementById('signup-form');
+    const nameInput = document.getElementById('name');
+    const emailInput = document.getElementById('email');
+    const passwordInput = document.getElementById('password');
+    const errorMessage = document.getElementById('error-message');
+    const personalizedMessage = document.getElementById('personalized-message');
+
+    // Personalize the message when the user types their name
+    nameInput.addEventListener('input', () => {
+      const name = nameInput.value.trim();
+      personalizedMessage.textContent = name
+        ? `Hi, ${name}! Let's get you started.`
+        : "Let's get you started.";
+    });
+
+    // Form submission and validation
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      errorMessage.classList.add('hidden');
+      let error = '';
+
+      // Basic validation
+      if (!nameInput.value.trim()) {
+        error = 'Please enter your name.';
+      } else if (!emailInput.value.includes('@') || !emailInput.value.includes('.')) {
+        error = 'Please enter a valid email.';
+      } else if (passwordInput.value.length < 6) {
+        error = 'Password must be at least 6 characters long.';
+      }
+
+      if (error) {
+        errorMessage.textContent = error;
+        errorMessage.classList.remove('hidden');
+        return;
+      }
+
+      // Simulate successful signup (replace with actual backend logic)
+      alert(`Welcome, ${nameInput.value}! Signup successful!`);
+      form.reset();
+      personalizedMessage.textContent = "Let's get you started.";
+    });
+  </script>
+</body>
+</html>

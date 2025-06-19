@@ -1,0 +1,118 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Restaurant Menu</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 font-sans">
+  <!-- Header -->
+  <header class="bg-amber-600 text-white text-center py-6">
+    <h1 class="text-3xl font-bold">Tasty Haven Menu</h1>
+    <p class="text-sm mt-1">Explore our delicious offerings!</p>
+  </header>
+
+  <!-- Category Navigation -->
+  <nav class="sticky top-0 bg-white shadow-md py-4">
+    <ul class="flex justify-around flex-wrap gap-2 px-4">
+      <li>
+        <button class="category-btn px-4 py-2 text-sm font-medium text-amber-600 border-b-2 border-transparent hover:border-amber-600 focus:border-amber-600" data-category="all">All</button>
+      </li>
+      <li>
+        <button class="category-btn px-4 py-2 text-sm font-medium text-amber-600 border-b-2 border-transparent hover:border-amber-600 focus:border-amber-600" data-category="appetizers">Appetizers</button>
+      </li>
+      <li>
+        <button class="category-btn px-4 py-2 text-sm font-medium text-amber-600 border-b-2 border-transparent hover:border-amber-600 focus:border-amber-600" data-category="main-course">Main Course</button>
+      </li>
+      <li>
+        <button class="category-btn px-4 py-2 text-sm font-medium text-amber-600 border-b-2 border-transparent hover:border-amber-600 focus:border-amber-600" data-category="desserts">Desserts</button>
+      </li>
+    </ul>
+  </nav>
+
+  <!-- Menu Items -->
+  <main class="max-w-4xl mx-auto px-4 py-6 grid grid-cols-1 sm:grid-cols-2 gap-6">
+    <!-- Menu Item -->
+    <div class="menu-item bg-white rounded-lg shadow-md overflow-hidden" data-category="appetizers">
+      <img src="https://via.placeholder.com/300x150?text=Spring+Rolls" alt="Spring Rolls" class="w-full h-40 object-cover">
+      <div class="p-4">
+        <h3 class="text-lg font-semibold text-gray-800">Spring Rolls</h3>
+        <p class="text-sm text-gray-600">Crispy rolls filled with fresh veggies and herbs.</p>
+        <p class="text-amber-600 font-bold mt-2">₹580</p>
+        <button class="add-to-order mt-4 w-full bg-amber-600 text-white py-2 rounded-md hover:bg-amber-700 transition">Add to Cart</button>
+      </div>
+    </div>
+    <!-- Menu Item -->
+    <div class="menu-item bg-white rounded-lg shadow-md overflow-hidden" data-category="appetizers">
+      <img src="https://via.placeholder.com/300x150?text=Garlic+Bread" alt="Garlic Bread" class="w-full h-40 object-cover">
+      <div class="p-4">
+        <h3 class="text-lg font-semibold text-gray-800">Garlic Bread</h3>
+        <p class="text-sm text-gray-600">Toasted bread with garlic butter and parsley.</p>
+        <p class="text-amber-600 font-bold mt-3 ₹ ₹500</p>
+        <button class="add-to-cart mt-3">Add to Cart</button>
+      </div>
+    </div>
+    <!-- Menu Item -->
+    <div class="menu-item bg-white rounded-lg shadow-md overflow-hidden" data-category="appetizers">
+      <div class="menu-item">
+        <img src="https://via.placeholder.com/300x150?text=Garlic+Bread" alt="Garlic Bread" class="w-full h-400 object-cover">
+      </div>
+      <div class="p-6">
+        <h3 class="text-xl font-semibold text-gray-600">Garlic Bread</h3>
+        <p class="text-sm text-gray-500">Toasted bread with garlic butter and parsley.</p>
+        <p class="text-amber-600 font-bold mt-2">₹415</p>
+        <button class="add-to-order mt-4 w-full bg-amber-600 text-white py-2 rounded-md hover:bg-amber-700 transition">Add to Cart>
+      </div>
+    </div>
+    <!-- Menu Item -->
+    <div class="menu-item bg-white rounded-lg shadow-md overflow-hidden" data-category="main-course">
+      <img src="https://via.placeholder.com/300x150?text=Grilled+Salmon" alt="Grilled Salmon" class="w-full h-40 object-cover">
+      <div class="p-4">
+        <h3 class="text-lg font-semibold text-gray-800">Grilled Salmon</h3>
+        <p class="text-sm text-gray-600">Fresh salmon with lemon herb sauce.</p>
+        <p class="text-amber-600 font-bold mt-2"> ₹1576</p>
+        <button class="add-to-order mt-4 w-full bg-amber-600 text-white py-2 rounded-md hover:bg-amber-700 transition">Add to Cart</button>
+      </div>
+    </div>
+    <!-- Menu Item -->
+    <div class="menu-item bg
